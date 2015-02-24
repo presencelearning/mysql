@@ -1,7 +1,7 @@
-FROM debian:wheezy
+FROM ubuntu:14.04
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
-RUN groupadd -r mysql && useradd -r -g mysql mysql
+RUN groupadd -r mysql -g 103306 && useradd -r -u 103306 -g mysql mysql
 
 # FATAL ERROR: please install the following Perl modules before executing /usr/local/mysql/scripts/mysql_install_db:
 # File::Basename
@@ -16,7 +16,7 @@ RUN apt-key adv --keyserver pool.sks-keyservers.net --recv-keys A4A9406876FCBD3C
 ENV MYSQL_MAJOR 5.7
 ENV MYSQL_VERSION 5.7.5-m15
 
-RUN echo "deb http://repo.mysql.com/apt/debian/ wheezy mysql-${MYSQL_MAJOR}-dmr" > /etc/apt/sources.list.d/mysql.list
+RUN echo "deb http://repo.mysql.com/apt/ubuntu/ trusty mysql-${MYSQL_MAJOR}-dmr" > /etc/apt/sources.list.d/mysql.list
 
 # the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
 # also, we set debconf keys to make APT a little quieter
@@ -31,8 +31,6 @@ RUN { \
 
 # comment out a few problematic configuration values
 RUN sed -Ei 's/^(bind-address|log)/#&/' /etc/mysql/my.cnf
-
-VOLUME /var/lib/mysql
 
 COPY docker-entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
